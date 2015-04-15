@@ -40,4 +40,20 @@ $RECYCLE.BIN/
 .AppleDesktop
 Network Trash Folder
 Temporary Items
+
+
+# Directories #
+/build/
+/bin/
+target/
+.settings/
+ 
+ 
+*.class
+ 
+# Package Files #
+*.jar
+*.war
+*.ear
+*.db
 .apdisk
