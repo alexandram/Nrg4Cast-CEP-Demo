@@ -47,6 +47,8 @@ Temporary Items
 /bin/
 target/
 .settings/
+.classpath
+.project
  
  
 *.class

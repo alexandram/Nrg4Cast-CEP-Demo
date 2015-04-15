@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3c.org/1999/xhtml"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"	  
+    xmlns:f="http://java.sun.com/jsf/core" 
+	xmlns:p="http://primefaces.org/ui">
+	
+
+	<h:head>
+	<style type="text/css">
+		.alignTop  {
+   			vertical-align: top;
+		}
+		 
+
+   </style>
+	</h:head>
+	<h:body>
+	<h1>Demo - Complex Event Detection over simulated historical data streaming</h1>
+	
+	<p:blockUI block="panel" trigger="buttons:start,buttons:stop, patterns:register" />
+	<h:panelGrid id = "panel" columns="2" columnClasses="alignTop,alignTop"
+	 style="margin-bottom:10px, margin-top:10px" cellpadding="5" >
+	
+	<h:panelGrid columns="1" style="margin-bottom:10px, margin-top:10px" cellpadding="5" >
+	
+	<h:form id="buttons">
+	
+	
+ 	
+ 
+	<h3>Manage CEP engine:</h3> 
+		<p:growl id="growl" life="2000" />		
+		<p:commandButton value="Start CEP Engine" id="start" 
+			update="growl" 
+			actionListener="#{eventDetectionView.startButtonAction}" />
+		<p:commandButton value="Stop CEP Engine" id="stop" 
+			update="growl" 
+			actionListener="#{eventDetectionView.stopButtonAction}" />
+			
+		<p:commandButton value="Start data stream" id="startData" 
+			update="growl" 
+			actionListener="#{eventDetectionView.startDataButtonAction}" />
+			
+			
+			
+		
+  		
+	</h:form>
+	
+	
+	
+	
+	
+	
+	<h:form id = "patterns">
+	<h3>Register patterns:</h3> 
+		<p:accordionPanel id="patternsPanel" style="width: 450px; "
+	  		value="#{eventDetectionView.patterns}"
+   	  		var="EPLPattern"  multiple="true" activeIndex="-1">
+   	  		<p:ajax event="tabChange" 
+   	  			listener="#{eventDetectionView.onTabChange}" update=":patterns:patternName" />
+   	  		<p:ajax event="tabClose" 
+   	  			listener="#{eventDetectionView.onTabClose}" update=":patterns:patternName" />
+       
+        <p:tab title="#{EPLPattern.name}">
+            <h:panelGrid columns="2" cellpadding="5" >
+                <h:outputText value="Name:" style="font-weight: bold" />
+                <h:outputText value="#{EPLPattern.name}" /> 	
+                <h:outputText value="EPL:" style="font-weight: bold" />
+                <h:outputText value="#{EPLPattern.epl}" /> 	
+                <h:outputText value="Registered:" style="font-weight: bold" />
+                <h:outputText value="#{EPLPattern.registered}" /> 			
+               
+            </h:panelGrid>
+        </p:tab>
+		</p:accordionPanel>
+		
+		<h:panelGrid columns="3" style="margin-bottom:10px; width: 400px; " 
+			cellpadding="5">
+  	   		 <p:inputTextarea id="patternName" rows="2" cols="30"
+  	   			 value="#{eventDetectionView.selectedPattern}"  />
+  	   			 <p:commandButton id="register" value="Register" 
+					update=":patterns:patternsPanel, :patterns:patternName, :buttons:growl" 
+					actionListener="#{eventDetectionView.registerButtonAction}" 
+			 				 />
+			 
+ 		</h:panelGrid>
+		
+			
+ 	
+	</h:form>
+	<h:form id = "datastream">
+	
+     	<h3>Data stream:</h3>
+        <h:inputTextarea id="displayData" cols="80" rows="5" readonly="true" 
+        value="#{eventDetectionView.measurementsText}" />
+		<p:poll interval="1" 
+			listener="#{eventDetectionView.updateMeasurementsText}" 
+			update=":datastream:displayData" />
+	</h:form>
+	
+	
+	</h:panelGrid>
+	<h:panelGrid columns="1" columnClasses="alignTop" style="margin-bottom:10px, margin-top:10px" cellpadding="5" >
+	
+	<h:form id="alerts">
+	<h3>Detected Events </h3>
+		<h:panelGrid columns="1" style="margin-bottom:10px" cellpadding="5">
+		 	<p:dataList  cols="70" id="detectedAlerts" 
+				value="#{eventDetectionView.detectedAlerts}" 
+				var="alert" type="unordered" itemType="none">
+				<f:facet name="header">            
+        		</f:facet>
+		        <p:commandLink update=":alerts:alertDetail" 
+		        		oncomplete="PF('alertDialog').show()" title="View Detail" 
+		        		styleClass="ui-icon ui-icon-search" 
+		        		style="float:left;margin-right:10px">
+		            <f:setPropertyActionListener value="#{alert}" 
+		            	target="#{eventDetectionView.selectedAlert}" />
+		            <h:outputText value="#{alert.name}, #{alert.timestampStr}" />
+		        </p:commandLink>
+		        <h:outputText value="#{alert.message}, #{alert.timestampStr}, 
+		        #{alert.type}" 
+		        style="display:inline-block"/>
+		    </p:dataList>		
+		
+		    
+			<p:poll  interval="1" 
+					listener="#{eventDetectionView.updateDetectedAlerts}" 
+					update="detectedAlerts"/>
+			
+			<p:dialog header="Alert Info" widgetVar="alertDialog" modal="true" showEffect="blind" hideEffect="explode" resizable="false">
+       			<p:outputPanel id="alertDetail" style="text-align:center;">
+            	<p:panelGrid  columns="2" rendered="#{not empty eventDetectionView.selectedAlert}" columnClasses="label,value">
+                    <h:outputText value="Type" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.type}" />
+	                <h:outputText value="Name" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.name}" />
+	                <h:outputText value="Message" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.message}" />
+	                <h:outputText value="Pilot Id" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.pilotId}" />
+	                <h:outputText value="Level" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.level}" />
+	                <h:outputText value="Timestamp" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.timestampStr}" /> 
+	                <h:outputText value="location" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.location}" />   
+	                <h:outputText value="Latitude" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.latitude}" />    
+	                <h:outputText value="Longitude" />
+	                <h:outputText value="#{eventDetectionView.selectedAlert.longitude}" />      
+            	</p:panelGrid>
+       			 </p:outputPanel>
+   			</p:dialog>
+   			
+   			 <p:commandButton id="Clear" value="Clear event records" 
+			update=":alerts:detectedAlerts" 
+			actionListener="#{eventDetectionView.clearButtonAction}" 
+			 icon="ui-icon-close"
+			 />
+			 </h:panelGrid>
+	
+		
+		
+	</h:form>
+		</h:panelGrid>
+	
+	</h:panelGrid>
+	
+	
+	</h:body>
+
+</html>
